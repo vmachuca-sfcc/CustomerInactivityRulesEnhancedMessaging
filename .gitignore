@@ -1,0 +1,27 @@
+.project
+.settings/
+.metadata
+build.properties
+config
+
+apex-scripts/log
+
+salesforce.schema
+Referenced Packages
+bin/
+tmp/
+config/
+*.tmp
+*.bak 
+local.properties
+.settings
+.loadpath
+.classpath
+*.cache
+
+*.sublime-project
+*.sublime-settings
+*.sublime-workspace
+mm.log
+
+.[dD][sS]_[sS]tore

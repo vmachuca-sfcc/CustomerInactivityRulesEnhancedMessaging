@@ -1,0 +1,23 @@
+
+<template>
+    <lightning-card icon-name="standard:opportunity">
+        <template if:true={stageOptions}>
+            <lightning-progress-indicator 
+                current-step={currentStage} 
+                type="path" 
+                variant="base"
+            >
+                <template for:each={stageOptions} for:item="stage">
+                    <lightning-progress-step 
+                        key={stage.value} 
+                        label={stage.label} 
+                        value={stage.value}
+                    ></lightning-progress-step>
+                </template>
+            </lightning-progress-indicator>
+        </template>
+        <template if:false={stageOptions}>
+            <p>🔄</p>
+        </template>
+    </lightning-card>
+</template>

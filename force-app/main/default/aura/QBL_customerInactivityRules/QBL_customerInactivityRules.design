@@ -1,0 +1,5 @@
+<design:component>
+    <design:attribute name="timeToSendWarning" label="Time to Send Warning (seconds)" />
+    <design:attribute name="warningMessage" label="Warning Message" />
+    <design:attribute name="timeToEndChat" label="Time to End Chat (seconds)" />
+</design:component>

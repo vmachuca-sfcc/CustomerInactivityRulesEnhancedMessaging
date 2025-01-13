@@ -46,6 +46,19 @@
         });
     },
 
+    verifyTimers: function(cmp, helper, isAgent) {
+        const timerWarningId = cmp.get("v.timeToSendWarningId");
+        const timerEndChatId = cmp.get("v.timeToEndChatId");
+        if (timerWarningId) {
+            clearTimeout(timerWarningId);
+            if(isAgent) cmp.set("v.timeToSendWarningId", this.createWaringTimer(cmp));
+        }
+        if (timerEndChatId) {
+            clearTimeout(timerEndChatId);
+            if(isAgent) cmp.set("v.timeToEndChatId", this.createEndChatTimer(cmp));
+        }
+    },
+
     closeFocusedTab: function(cmp) {
         const workspaceAPI = cmp.find("workspace");
         workspaceAPI.getFocusedTabInfo().then(function(response) {

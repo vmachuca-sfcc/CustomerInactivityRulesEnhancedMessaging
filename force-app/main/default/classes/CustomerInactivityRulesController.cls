@@ -16,7 +16,7 @@ public without sharing class CustomerInactivityRulesController {
         for(MessagingSession session : [
             SELECT Id, Status, LastCustomerMessageDate__c, LastAgentMessageDate__c
             FROM MessagingSession 
-            WHERE OwnerId = :ownerId AND Status IN ('Active', 'Inactive') AND LastModifiedDate = TODAY]) {
+            WHERE OwnerId = :ownerId AND Status = 'Inactive' AND LastModifiedDate = TODAY]) {
             
    			DateTime timestamp = getTimestamp(session);
             Boolean limitExceeded = isTimestampGreaterThanLimit(timestamp, minInactivityTime);

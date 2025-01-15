@@ -28,7 +28,8 @@
             recordId: recordId
         }).then(result => {
             if (!result) return;
-            ctx.closeFocusedTab(cmp);
+            ctx.saveCloseLog(cmp);
+            ctx.closeTab(cmp);
             console.log("Successfully ended chat");
         })
         .catch(e => {
@@ -39,14 +40,13 @@
     sendMessage: function (cmp, msg) {
         const conversationKit = cmp.find("conversationKit");
         const recordId = cmp.get("v.recordId");
-        cmp.set("v.skipScheduleTimer", true);
         conversationKit.sendMessage({
             recordId: recordId,
             message: { text: msg }
         });
     },
 
-    verifyTimers: function(cmp, helper, isAgent) {
+    verifyTimers: function(cmp, event, isAgent) {
         const timerWarningId = cmp.get("v.timeToSendWarningId");
         const timerEndChatId = cmp.get("v.timeToEndChatId");
         if (timerWarningId) {
@@ -59,21 +59,25 @@
         }
     },
 
-    closeFocusedTab: function(cmp) {
+    saveTab: function(cmp) {
         const workspaceAPI = cmp.find("workspace");
         workspaceAPI.getFocusedTabInfo().then(function(response) {
-            const focusedTabId = response.tabId;
-            workspaceAPI.closeTab({ tabId: focusedTabId });
+            const tabId = response.tabId;
+            cmp.set("v.tabId", tabId);
         })
         .catch(function(error) {
             console.log(error);
         });
     },
 
-    IsSkipScheduleTimer: function(cmp) {
-        const isSkip = cmp.get("v.skipScheduleTimer");
-        cmp.set("v.skipScheduleTimer", false);
-        return isSkip;
+    closeTab: function(cmp) {
+        const workspaceAPI = cmp.find("workspace");
+        const tabId = cmp.get("v.tabId");
+        workspaceAPI.closeTab({ tabId: tabId });
+    },
+
+    IsSkipScheduleTimer: function(cmp, event) {
+        return event.getParam('content') == cmp.get('v.warningMessage');
     },
 
     saveLastMessage: function(cmp, event, isAgent) {
@@ -82,6 +86,14 @@
             recordId: event.getParam('recordId'),
             content: event.getParam('content'),
             timestamp: event.getParam('timestamp')
+        });
+        $A.enqueueAction(action);
+    },
+
+    saveCloseLog: function(cmp) {
+        let action = cmp.get("c.saveCloseLog");
+        action.setParams({ 
+            recordId: cmp.get('v.recordId')
         });
         $A.enqueueAction(action);
     }

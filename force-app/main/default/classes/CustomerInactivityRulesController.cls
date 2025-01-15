@@ -37,6 +37,14 @@ public without sharing class CustomerInactivityRulesController {
     public static void saveLastCustomerMessage(String recordId, String content, DateTime timestamp) {
         saveLastMessage(false, recordId, content, timestamp);
     }  
+
+    @AuraEnabled
+    public static void saveCloseLog(String recordId) {
+        MessagingSession session = [SELECT Id FROM MessagingSession WHERE Id = :recordId LIMIT 1];
+        session.IsAutomaticallyClose__c = true;
+        session.IsAutomaticallyCloseDate__c = DateTime.now();
+        update session;
+    } 
     
     private static void saveLastMessage(Boolean isAgent, String recordId, String content, DateTime timestamp) {
         MessagingSession session = [SELECT Id FROM MessagingSession WHERE Id = :recordId LIMIT 1];

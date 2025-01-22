@@ -1,32 +1,35 @@
 public without sharing class CustomerInactivityRulesController {
-
-    @AuraEnabled
-    public static Boolean isCurrentAgentOnline(String userId) {
-        List<UserServicePresence> result = [
-             SELECT IsCurrentState FROM UserServicePresence 
-             WHERE IsCurrentState = true AND Userid = :userId LIMIT 1
-        ];
-        return result.size() > 0;        
-    }
-  		
+    
     @AuraEnabled
     public static List<String> getMessagingSessionTabsToBeClosed(String ownerId, Integer minInactivityTime) {
-        List<String> sessionIds = new List<String>();
-                
+        List<String> entries = new List<String>();
+            
         for(MessagingSession session : [
             SELECT Id, Status, LastCustomerMessageDate__c, LastAgentMessageDate__c
-            FROM MessagingSession 
-            WHERE OwnerId = :ownerId AND Status = 'Inactive' AND LastModifiedDate = TODAY]) {
-            
+            FROM MessagingSession WHERE OwnerId = :ownerId AND Status = 'Active'
+        ]) {      
    			DateTime timestamp = getTimestamp(session);
             Boolean limitExceeded = isTimestampGreaterThanLimit(timestamp, minInactivityTime);
-   			
             if(limitExceeded) {
-                sessionIds.Add(session.Id);
+                entries.Add(session.Id);
             }          
         }
-  		return sessionIds; 
+  		return entries;
     }
+    
+    @AuraEnabled
+    public static void saveAutoClosedTabsLog(List<String> recordIds) {
+		List<MessagingSession> toUpdate = new List<MessagingSession>();
+        
+        for(MessagingSession session : [
+            SELECT Id FROM MessagingSession WHERE Id IN :recordIds
+        ]) {     
+   			session.IsAutomaticallyClose__c = true;
+        	session.IsAutomaticallyCloseDate__c = DateTime.now();
+			toUpdate.Add(session);      
+        }
+        update toUpdate;
+    } 
 
     @AuraEnabled
     public static void saveLastAgentMessage(String recordId, String content, DateTime timestamp) {
@@ -37,14 +40,6 @@ public without sharing class CustomerInactivityRulesController {
     public static void saveLastCustomerMessage(String recordId, String content, DateTime timestamp) {
         saveLastMessage(false, recordId, content, timestamp);
     }  
-
-    @AuraEnabled
-    public static void saveCloseLog(String recordId) {
-        MessagingSession session = [SELECT Id FROM MessagingSession WHERE Id = :recordId LIMIT 1];
-        session.IsAutomaticallyClose__c = true;
-        session.IsAutomaticallyCloseDate__c = DateTime.now();
-        update session;
-    } 
     
     private static void saveLastMessage(Boolean isAgent, String recordId, String content, DateTime timestamp) {
         MessagingSession session = [SELECT Id FROM MessagingSession WHERE Id = :recordId LIMIT 1];
@@ -59,7 +54,7 @@ public without sharing class CustomerInactivityRulesController {
     }
     
     private static Boolean isTimestampGreaterThanLimit(Datetime timestamp, Integer minInactivityTime) {
-        if(timestamp == null) return false;
+        if(timestamp == null) return true;
         Long differenceInMillis = Datetime.now().getTime() - timestamp.getTime();
         Long differenceInMinutes = differenceInMillis / 60000;
         return differenceInMinutes >= minInactivityTime;

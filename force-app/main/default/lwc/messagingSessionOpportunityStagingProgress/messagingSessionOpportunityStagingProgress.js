@@ -1,7 +1,9 @@
 import { LightningElement, api, wire } from 'lwc';
 import { getRecord } from 'lightning/uiRecordApi';
+import { publish, MessageContext } from 'lightning/messageService';
 import { getPicklistValues } from 'lightning/uiObjectInfoApi';
 import OPPORTUNITY_STAGE_FIELD from '@salesforce/schema/Opportunity.StageName';
+import MessagingSessionCloseAllTabs from "@salesforce/messageChannel/MessagingSessionCloseAllTabs__c";
 
 export default class MessagingSessionOpportunityStagingProgress extends LightningElement {
     @api recordId;
@@ -9,6 +11,9 @@ export default class MessagingSessionOpportunityStagingProgress extends Lightnin
     currentStage;
     stageOptions = [];
     recordTypeId;
+
+    @wire(MessageContext)
+    messageContext;
 
     @wire(getRecord, { recordId: '$recordId', fields: ['MessagingSession.OpportunityId'] })
     messagingSession({ error, data }) {
@@ -27,5 +32,9 @@ export default class MessagingSessionOpportunityStagingProgress extends Lightnin
     picklistValues({ error, data }) {
         if (!data) return;
         this.stageOptions = data.values;
+    }
+
+    closeTabsClick() {  
+        publish(this.messageContext, MessagingSessionCloseAllTabs, { closeAll: true });
     }
 }

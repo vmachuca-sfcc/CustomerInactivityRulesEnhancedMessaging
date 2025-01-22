@@ -1,18 +1,25 @@
 
 <template>
     <lightning-card icon-name="standard:opportunity">
+        <lightning-button 
+            slot="actions"
+            variant="destructive-text"
+            label="Fechar todas abas" 
+            icon-name="utility:close"
+            onclick={closeTabsClick}>
+        </lightning-button>
+
         <template if:true={stageOptions}>
             <lightning-progress-indicator 
                 current-step={currentStage} 
                 type="path" 
-                variant="base"
-            >
+                variant="base">
                 <template for:each={stageOptions} for:item="stage">
                     <lightning-progress-step 
                         key={stage.value} 
                         label={stage.label} 
-                        value={stage.value}
-                    ></lightning-progress-step>
+                        value={stage.value}>
+                    </lightning-progress-step>
                 </template>
             </lightning-progress-indicator>
         </template>
